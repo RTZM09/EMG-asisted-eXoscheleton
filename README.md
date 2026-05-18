@@ -19,9 +19,10 @@ Sistemul este dezvoltat pe o arhitectură hardware bazată pe microcontrolerul *
 
 ## 📂 Structura Proiectului
 
-*   `main.cpp` — Codul principal de producție (clasificare în timp real, mașină de stări și control PWM pe 12 biți via LEDC API).
-*   `data_collection.cpp` — **[Fișierul de Colectare a Datelor]** Scriptul dedicat achiziției datelor brute de la senzori, utilizat pentru generarea seturilor de date și extragerea coordonatelor pentru `centroizi[]`.
-
+*   `main.cpp` — Codul principal de producție (clasificare în timp real, state machine și control PWM pe 12 biți via LEDC API).
+*   `data_collection.cpp` — Scriptul dedicat achiziției datelor brute de la senzori, utilizat pentru generarea seturilor de date și extragerea coordonatelor pentru `centroizi[]`.
+*   `electrical.png1` - Schema electrica a proiectului
+*   `assembley.step` - Fisier CAD al unui deget mecatronic
 ---
 
 ## 📐 Modelul Matematic Utilizat
