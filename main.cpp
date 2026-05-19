@@ -1,12 +1,14 @@
 #include <Arduino.h>
 #include <math.h>
+#include "BluetoothSerial.h"
 
-// --- CONFIGURARE PINI FIZICI ---
-const int PIN_SERVO_MARE     = 18; // Index 0
-const int PIN_SERVO_ARATATOR = 23; // Index 1
-const int PIN_SERVO_MIJLOCIU = 19; // Index 2
-const int PIN_SERVO_INELAR   = 22; // Index 3 -> INVERSAT
-const int PIN_SERVO_MIC      = 21; // Index 4 -> INVERSAT
+BluetoothSerial SerialBT;
+
+const int PIN_SERVO_MARE     = 18; 
+const int PIN_SERVO_ARATATOR = 23; 
+const int PIN_SERVO_MIJLOCIU = 19; 
+const int PIN_SERVO_INELAR   = 22; 
+const int PIN_SERVO_MIC      = 21; 
 
 const int piniDegete[] = {PIN_SERVO_MARE, PIN_SERVO_ARATATOR, PIN_SERVO_MIJLOCIU, PIN_SERVO_INELAR, PIN_SERVO_MIC};
 const int nrDegete = 5;
@@ -17,11 +19,10 @@ const int nrDegete = 5;
 #define STEP_SIZE 50     
 #define NUM_VOTES 7      
 
-// --- PARAMETRI PWM 12-BIT ---
 const int PWM_FREQ = 50;
 const int PWM_RES = 12;
-const int POS_0 = 102;  // 0 grade (repaus standard)
-const int POS_1 = 512;  // 180 grade (flexie standard)
+const int POS_0 = 102;  
+const int POS_1 = 512;  
 
 struct Centroid {
   const char* nume;
@@ -30,7 +31,6 @@ struct Centroid {
 
 const int NUM_GESTURI = 5; 
 Centroid centroizi[] = {
-  // Nume,       MAV1,             RMS1,             MAV2,             RMS2
   {"ARATATOR",   260.7924,         336.038021052632, 50.2962,          101.226042105263},
   {"MIJLOCIU",   229.976170212766, 292.495310283688, 25.2944326241135, 67.2815070921986},
   {"INELAR",     297.49590438247,  376.651545816733, 94.0666135458167, 194.912262948207},
@@ -48,22 +48,20 @@ int gestPrecedent = -1;
 
 void setup() {
   Serial.begin(115200);
+  SerialBT.begin("NeuroGrip_ESP32"); 
+
   analogReadResolution(12);
   pinMode(SENSOR1_PIN, INPUT);
   pinMode(SENSOR2_PIN, INPUT);
   
   for(int i = 0; i < NUM_VOTES; i++) voti[i] = 0; 
 
-  // Initializare PWM 12-bit cu esalonare si inversare pentru pinii 22 si 21 la boot
   for (int i = 0; i < nrDegete; i++) {
     if(ledcAttach(piniDegete[i], PWM_FREQ, PWM_RES)) {
       int pozitieInitiala = POS_0;
-      
-      // La REPAUS, pinii 22 (index 3) si 21 (index 4) stau deschisi invers (adica POS_1)
       if (i == 3 || i == 4) {
         pozitieInitiala = POS_1;
       }
-      
       ledcWrite(piniDegete[i], pozitieInitiala);
       delay(50); 
     }
@@ -76,23 +74,20 @@ void executaGest(int g) {
 
   int pozitii[5];
   
-  // Logica nativa a gesturilor
   switch(g) {
-    case 0: // ARATATOR 
+    case 0: 
       pozitii[0]=POS_0; pozitii[1]=POS_1; pozitii[2]=POS_0; pozitii[3]=POS_0; pozitii[4]=POS_0; break;
-    case 1: // MIJLOCIU 
+    case 1: 
       pozitii[0]=POS_0; pozitii[1]=POS_0; pozitii[2]=POS_1; pozitii[3]=POS_0; pozitii[4]=POS_0; break;
-    case 2: // INELAR 
+    case 2: 
       pozitii[0]=POS_0; pozitii[1]=POS_0; pozitii[2]=POS_0; pozitii[3]=POS_1; pozitii[4]=POS_0; break;
-    case 3: // REPAUS 
+    case 3: 
       for(int i=0; i<5; i++) pozitii[i] = POS_0; break;
-    case 4: // PUMN 
+    case 4: 
       for(int i=0; i<5; i++) pozitii[i] = POS_1; break;
     default: return;
   }
 
-  // --- INVERSARE LOGICA PINI 22 SI 21 ---
-  // Inversam starea doar pentru Inelar (index 3, pin 22) si Mic (index 4, pin 21)
   pozitii[3] = (pozitii[3] == POS_0) ? POS_1 : POS_0;
   pozitii[4] = (pozitii[4] == POS_0) ? POS_1 : POS_0;
 
@@ -146,6 +141,20 @@ void loop() {
       }
 
       Serial.print("Decizie: "); Serial.println(centroizi[castigator].nume);
+      
+      // Trimite datele prin Bluetooth către aplicație
+      if (SerialBT.connected()) {
+        // 1. Trimite gestul calculat
+        SerialBT.print("GEST:");
+        SerialBT.println(centroizi[castigator].nume);
+        
+        // 2. Trimite MAV și RMS pentru ambii senzori separati prin virgula
+        SerialBT.print("DATA:");
+        SerialBT.print(m1); SerialBT.print(",");
+        SerialBT.print(r1); SerialBT.print(",");
+        SerialBT.print(m2); SerialBT.print(",");
+        SerialBT.println(r2);
+      }
       
       executaGest(castigator); 
       
