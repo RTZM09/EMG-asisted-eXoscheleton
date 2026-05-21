@@ -155,7 +155,7 @@ void loop() {
     int valADC1 = analogRead(SENSOR1_PIN);
     int valADC2 = analogRead(SENSOR2_PIN);
 
-    // MODALITATEA 1: Calibrare activă (Stream de date brute tip CSV)
+    //csvul
     if (modCalibrareBruta) {
       SerialBT.print("RAW:");
       SerialBT.print(valADC1);
@@ -163,13 +163,13 @@ void loop() {
       SerialBT.println(valADC2);
     }
 
-    // Înmagazinare în buffer pentru calculul ferestrelor
+    // colectarea in buffer
     buffer1[writeIdx] = valADC1;
     buffer2[writeIdx] = valADC2;
     writeIdx = (writeIdx + 1) % WINDOW_SIZE;
     newSamplesCount++;
 
-    // MODALITATEA 2: Rulare normală cu clasificare prin distanță Euclidiană
+    //distanta euclidiana
     if (modRulareNormala && newSamplesCount >= STEP_SIZE) {
       double s1 = 0, s2 = 0, sq1 = 0, sq2 = 0;
       for (int i = 0; i < WINDOW_SIZE; i++) {
