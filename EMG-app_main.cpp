@@ -4,7 +4,7 @@
 
 BluetoothSerial SerialBT;
 
-// Pini Servomotoare
+//servomotoare
 const int PIN_SERVO_MARE     = 18; 
 const int PIN_SERVO_ARATATOR = 23; 
 const int PIN_SERVO_MIJLOCIU = 19; 
@@ -35,7 +35,6 @@ const int NUM_GESTURI = 5;
 Centroid centroizi[NUM_GESTURI];
 String numeGesturi[] = {"ARATATOR", "MIJLOCIU", "INELAR", "REPAUS", "PUMN"};
 
-// Stările Sistemului
 bool modCalibrareBruta = false;
 bool modRulareNormala = false;
 
@@ -51,7 +50,6 @@ void setup() {
   Serial.begin(115200);
   SerialBT.begin("NeuroGrip_ESP32"); 
 
-  // Alocare inițială nume gesturi în structuri
   for(int i = 0; i < NUM_GESTURI; i++) {
     centroizi[i].nume = numeGesturi[i];
   }
@@ -60,7 +58,7 @@ void setup() {
   pinMode(SENSOR1_PIN, INPUT);
   pinMode(SENSOR2_PIN, INPUT);
   
-  for(int i = 0; i < NUM_VOTES; i++) voti[i] = 3; // Default REPAUS
+  for(int i = 0; i < NUM_VOTES; i++) voti[i] = 3; // default REPAUS
 
   for (int i = 0; i < nrDegete; i++) {
     if(ledcAttach(piniDegete[i], PWM_FREQ, PWM_RES)) {
@@ -84,7 +82,6 @@ void executaGest(int g) {
     default: return;
   }
 
-  // Corecție inversare pini mecanici degete mici
   pozitii[3] = (pozitii[3] == POS_0) ? POS_1 : POS_0;
   pozitii[4] = (pozitii[4] == POS_0) ? POS_1 : POS_0;
 
@@ -109,7 +106,7 @@ void proceseazaComenziBluetooth() {
       Serial.println("Aplicatia a oprit esantionarea bruta.");
     }
     else if (msg == "CMD:START_RUN") {
-      // Verificăm dacă avem toți centroizii încărcați
+      // verif
       bool totiCalibrati = true;
       for(int i=0; i<NUM_GESTURI; i++) {
         if(!centroizi[i].calibrat) totiCalibrati = false;
@@ -123,7 +120,7 @@ void proceseazaComenziBluetooth() {
       }
     }
     else if (msg.startsWith("CENTROID:")) {
-      // Format: CENTROID:ID,MAV1,RMS1,MAV2,RMS2
+      
       String date = msg.substring(9);
       int idxComa1 = date.indexOf(',');
       int idxComa2 = date.indexOf(',', idxComa1 + 1);
@@ -150,7 +147,7 @@ void loop() {
   proceseazaComenziBluetooth();
 
   static unsigned long lastSampleTime = 0;
-  if (micros() - lastSampleTime >= 1000) { // Frecvență stabilă de eșantionare: 1kHz
+  if (micros() - lastSampleTime >= 1000) {
     lastSampleTime = micros();
     int valADC1 = analogRead(SENSOR1_PIN);
     int valADC2 = analogRead(SENSOR2_PIN);
