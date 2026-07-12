@@ -1,14 +1,11 @@
 #include <Arduino.h>
 
-// Definire pini ESP32 
 #define SENSOR1_PIN 34
 #define SENSOR2_PIN 35
-
-// Configurare fereastră (100ms la 1000Hz)
 #define WINDOW_SIZE 100  
-#define STEP_SIZE 50     // Overlap 50% (calcul la fiecare 50ms)
+#define STEP_SIZE 50     
 
-// Corecție: Declarare ca vectori (arrays)
+
 int buffer1[200];
 int buffer2[200];
 int writeIdx = 0;
@@ -17,7 +14,7 @@ int newSamplesCount = 0;
 void setup() {
   Serial.begin(115200);
   
-  // ESP32 ADC are 12 biți (0-4095) 
+
   analogReadResolution(12);
   
   pinMode(SENSOR1_PIN, INPUT);
@@ -35,7 +32,7 @@ void loop() {
   if (micros() - lastSampleTime >= 1000) {
     lastSampleTime = micros();
     
-    // Citire semnal unipolar (deja rectificat intern de TL084) 
+
     buffer1[writeIdx] = analogRead(SENSOR1_PIN);
     buffer2[writeIdx] = analogRead(SENSOR2_PIN);
     
@@ -43,7 +40,7 @@ void loop() {
     newSamplesCount++;
     
     if (newSamplesCount >= STEP_SIZE) {
-      // Calcul caracteristici pe fereastra de 100ms
+      //calc
       double sum1 = 0, sum2 = 0;
       double sumSq1 = 0, sumSq2 = 0;
       
@@ -57,13 +54,16 @@ void loop() {
         sumSq2 += val2 * val2;
       }
       
-      // MAV și RMS
+      
       float mav1 = (float)(sum1 / WINDOW_SIZE);
       float mav2 = (float)(sum2 / WINDOW_SIZE);
       float rms1 = sqrt(sumSq1 / WINDOW_SIZE);
       float rms2 = sqrt(sumSq2 / WINDOW_SIZE);
       
-      // Output CSV pentru grafic și fișier text (MAV1,RMS1,MAV2,RMS2)
+      // output pt csv
+      //se ia din ploter si se dupa ce s au strans destule date (peste un min) se copiaza in fisier csv, ulterior facand media in excel
+      // cu cat se aduna mai multe date, cu atat este mai precis
+      //in main(colectarea automata) colectarea se face similar
       Serial.print(mav1); Serial.print(",");
       Serial.print(rms1); Serial.print(",");
       Serial.print(mav2); Serial.print(",");
