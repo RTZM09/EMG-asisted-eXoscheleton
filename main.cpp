@@ -142,13 +142,13 @@ void loop() {
 
       Serial.print("Decizie: "); Serial.println(centroizi[castigator].nume);
       
-      // Trimite datele prin Bluetooth către aplicație
+      
       if (SerialBT.connected()) {
-        // 1. Trimite gestul calculat
+        
         SerialBT.print("GEST:");
         SerialBT.println(centroizi[castigator].nume);
         
-        // 2. Trimite MAV și RMS pentru ambii senzori separati prin virgula
+        
         SerialBT.print("DATA:");
         SerialBT.print(m1); SerialBT.print(",");
         SerialBT.print(r1); SerialBT.print(",");
