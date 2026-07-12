@@ -1,8 +1,10 @@
-# NeuroGrip — Exoschelet de Membru Superior Comandat prin Semnale Miografice (EMG)
+# NeuroGrip
 
 NeuroGrip este un sistem robotic bio-ingineresc de tip exoschelet, proiectat pentru asistarea sau reabilitarea mișcărilor de flexie și extensie ale degetelor. Dispozitivul preia potențialele electrice generate de contracțiile musculare prin intermediul a doi senzori EMG (echipați cu punți de achiziție analogică de tip Wheatstone), clasifică intenția utilizatorului în timp real și acționează servomotoarele geometriei degetelor.
 
 Sistemul este dezvoltat pe o arhitectură hardware bazată pe microcontrolerul **ESP32** și structuri portante realizate prin printare 3D.
+
+#### Documentația detaliată poate fi gasită în `NeuroGrip.pdf`.
 
 ---
 
@@ -49,17 +51,17 @@ Unde $c$ reprezintă coordonatele centroidului testat. Decizia finală este vali
 *   **Servo Deget Inelar:** GPIO 22 (PWM) 
 *   **Servo Deget Mic:** GPIO 21 (PWM) 
 
-> !!! **Notă Electrică:** Ground-ul (GND) sursei externe de alimentare (pachetul de baterii AA de ~6V) trebuie conectat obligatoriu la pinul GND al ESP32(NU comun cu senzorii) pentru a asigura o mască comună de potențial pentru semnalele de control PWM.
+> !!! **Notă:** Ground-ul (GND) sursei externe de alimentare (pachetul de baterii AA de ~6V) trebuie conectat obligatoriu la pinul GND al ESP32(NU COMUN CU SENZORII) pentru a asigura o masă comună de potențial.
 
 ---
 
 ##  Flux de Lucru 
-*Opțiunea 1*
-  1.  **Etapa de Calibrare:** Se rulează fișierul de colectare a datelor (`data_collection.cpp`) în timp ce subiectul execută izometric cele 5 gesturi țintă. Datele obținute sunt procesate statistic pentru a extrage noile coordonate     ale centroizilor.
+*Opțiunea 1 (Calibrare manuală)*
+  1.  **Etapa de Calibrare:** Se rulează fișierul de colectare a datelor (`data_collection.cpp`) în timp ce subiectul execută izometric cele 5 gesturi țintă. Datele obținute sunt procesate statistic pentru a extrage noile coordonate ale centroizilor.
   2.  **Actualizare:** Valorile MAV și RMS rezultate se copiază în matricea `centroizi[]` din fișierul principal.
   3.  **Execuție:** Se uploadează `main.cpp` pentru operarea autonomă a exoscheletului AXIS.
 
-*Opțiunea 2*
+*Opțiunea 2 (Calibrare în aplicație)*
   1. Se descarcă `EMG-app_main.cpp` pentru EPS32.
   2. Se descarcă și se deschide `EMG-app_git.zip` folosind Android Studio.
   3. După ce se instalează aplicația pe telefon, se urmează pașii de pe ecran.
