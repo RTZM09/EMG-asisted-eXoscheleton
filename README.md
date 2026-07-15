@@ -26,17 +26,60 @@ Sistemul este dezvoltat pe o arhitectură hardware bazată pe microcontrolerul *
 *   `main.cpp` — Codul principal de producție (clasificare în timp real, state machine și control PWM pe 12 biți via LEDC API).
 *   `data_collection.cpp` — Scriptul dedicat achiziției datelor brute de la senzori, utilizat pentru generarea seturilor de date și extragerea coordonatelor pentru `centroizi[]`.
 ---
-*   `electrical.png1` - Schema electrica a proiectului
+*   `electrical.png` - Schema electrica a proiectului
 *   `assembley.step` - Fisier CAD al unui deget mecatronic
 ---
 
-##  Modelul Matematic Utilizat
+## Modelul Matematic Utilizat
 
-Pentru fiecare fereastră analizată, clasificarea se realizează prin minimizarea distanței euclidiene cvadridimensionale față de profilele musculare stocate:
+Tranziția la un singur senzor EMG a necesitat trecerea de la analiza simplă a amplitudinii pe mai multe canale la extragerea a **4 caracteristici distincte** (amplitudine, complexitate și frecvență) dintr-un singur semnal centrat (fără componenta continuă $\mu$).
 
-$$d = \sqrt{(MAV_1 - c.mav_1)^2 + (RMS_1 - c.rms_1)^2 + (MAV_2 - c.mav_2)^2 + (RMS_2 - c.rms_2)^2}$$
+### 1. Extragerea Trăsăturilor (Feature Extraction)
 
-Unde $c$ reprezintă coordonatele centroidului testat. Decizia finală este validată de filtrul statistic Mode (Vot Majoritar).
+Pentru fiecare fereastră de analiză de mărime $N$, se calculează următorii parametri:
+
+* **Mean Absolute Value (MAV)** (cu eliminarea DC offset-ului $\mu$):
+
+$$MAV = \frac{1}{N} \sum_{i=1}^{N} \vert{}x_i - \mu\vert{}$$
+
+
+* **Root Mean Square (RMS)**:
+
+$$RMS = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (x_i - \mu)^2}$$
+
+
+* **Waveform Length (WL)** (măsoară complexitatea și variația semnalului în timp):
+
+$$WL = \frac{1}{N} \sum_{i=1}^{N-1} \vert{}x_{i+1} - x_i\vert{}$$
+
+
+* **Zero Crossings (ZC)** (estimează frecvența semnalului prin numărarea trecerilor prin zero, ignorând zgomotul de fond sub un prag $th$):
+
+$$ZC = \sum_{i=1}^{N-1} \mathbb{I}\left( \text{sgn}(x_{i+1} - \mu) \neq \text{sgn}(x_i - \mu) \quad \text{și} \quad \vert{}x_{i+1} - x_i\vert{} > th \right)$$
+
+
+Unde $$\mathbb{I}$$ este o funcție indicatoare care returnează $1$ dacă condiția este adevărată și $0$ în caz contrar.
+
+---
+
+### 2. Clasificarea Gesturilor
+
+Clasificarea se realizează prin calcularea unei **distanțe euclidiene ponderate** într-un spațiu cvadridimensional, raportată la centroizii salvați în memoria nevolatilă:
+
+$$d = \sqrt{w_1(MAV - c.mav)^2 + w_2(RMS - c.rms)^2 + w_3(WL - c.wl)^2 + w_4(ZC - c.zc)^2}$$
+
+Unde:
+
+* $c$ reprezintă coordonatele centroidului testat.
+* $w_1, w_2, w_3, w_4$ sunt ponderile de scalare utilizate pentru a preveni dominarea distanței de către parametrii cu valori absolute mari (precum MAV) în detrimentul celor de frecvență (precum ZC):
+* $w_1 = 1.0$ (pondere MAV)
+* $w_2 = 1.0$ (pondere RMS)
+* $w_3 = 2.0$ (pondere WL)
+* $w_4 = 10.0$ (pondere ZC)
+
+
+
+Decizia finală este filtrată și stabilizată prin **Vot Majoritar (filtru statistic Mode)** pe ultimele 8 ferestre pentru a preveni micro-declanșările accidentale.
 
 ---
 
