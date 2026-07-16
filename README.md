@@ -4,7 +4,7 @@ NeuroGrip este un sistem robotic bio-ingineresc de tip exoschelet, proiectat pen
 
 Sistemul este dezvoltat pe o arhitectură hardware bazată pe microcontrolerul **ESP32** și structuri portante realizate prin printare 3D.
 
-#### Documentația detaliată poate fi gasită în `NeuroGrip.pdf`.
+#### Documentația detaliată poate fi gasită în `NeuroGrip.pdf`, iar videoclipuri relevante se găsesc indexate cu `NeuroGrip1` `NeuroGrip2` și `NeuroGrip3`.
 
 ---
 
