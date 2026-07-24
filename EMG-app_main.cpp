@@ -17,9 +17,9 @@ const int piniDegete[] = {PIN_SERVO_MARE, PIN_SERVO_ARATATOR, PIN_SERVO_MIJLOCIU
 const int nrDegete = 5;
 
 #define SENSOR1_PIN 33
-#define WINDOW_SIZE 120  
-#define STEP_SIZE 60     
-#define NUM_VOTES 10
+#define WINDOW_SIZE 100  
+#define STEP_SIZE 50     
+#define NUM_VOTES 7
 
 const int PWM_FREQ = 50;
 const int PWM_RES = 12;
